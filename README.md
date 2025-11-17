@@ -22,17 +22,21 @@
   
 2. Установка systemd-юнитов:
    
+   ```bash
    sudo cp systemd/monitor-test.* /etc/systemd/system/
 
-3. Создаём директорию для состояния (PID-файл):
+4. Создаём директорию для состояния (PID-файл):
 
+   ```bash
    sudo mkdir -p /var/lib/monitoring
 
-4. Активирование и запуск таймер:
+6. Активирование и запуск таймер:
 
+   ```bash
    sudo systemctl daemon-reload
    sudo systemctl enable --now monitor-test.timer
 
-5. Логи:
+8. Логи:
 
+   ```bash
    /var/log/monitoring.log
