@@ -1,35 +1,37 @@
 #!/bin/bash
 
 LOGFILE="/var/log/monitoring.log"
+API_URL="https://test.com/monitoring/test/api"
 PROCESS_NAME="test"
-MONITORING_HOST=""
-MONITORING_PORT=""
-
-touch "$LOGFILE" 2>/dev/null || { echo "Не удалось создать $LOGFILE"; exit 1; }
 
 log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOGFILE"
 }
 
-if ! pgrep -x "$PROCESS_NAME" > /dev/null; then
+CURRENT_PID=$(pgrep -f "^$PROCESS_NAME$")
+
+if [ -z "$CURRENT_PID" ]; then
+    # Процесс не запущен — ничего не делаем
     exit 0
 fi
 
-CURRENT_PID=$(pgrep -x "$PROCESS_NAME" | head -n1)
-PIDFILE="/var/run/monitor-test.pid"
+STATE_FILE="/var/lib/monitoring/test.pid"
 
-if [ -f "$PIDFILE" ]; then
-    PREVIOUS_PID=$(cat "$PIDFILE")
-    if [ "$CURRENT_PID" != "$PREVIOUS_PID" ]; then
-        log_message "Процесс '$PROCESS_NAME' был перезапущен (старый PID: $PREVIOUS_PID, новый PID: $CURRENT_PID)"
+if [ -f "$STATE_FILE" ]; then
+    OLD_PID=$(cat "$STATE_FILE")
+else
+    OLD_PID=""
+fi
+
+mkdir -p "$(dirname "$STATE_FILE")"
+echo "$CURRENT_PID" > "$STATE_FILE"
+
+if curl -fsS --max-time 10 "$API_URL" > /dev/null 2>&1; then
+    # API доступен
+    if [ "$OLD_PID" != "$CURRENT_PID" ]; then
+        log_message "Process '$PROCESS_NAME' was restarted (old PID: $OLD_PID, new PID: $CURRENT_PID)."
     fi
 else
-    echo "$CURRENT_PID" > "$PIDFILE"
-    exit 0
-fi
-
-echo "$CURRENT_PID" > "$PIDFILE"
-
-if ! nc -z "$MONITORING_HOST" "$MONITORING_PORT" 2>/dev/null; then
-    log_message "Сервер мониторинга $MONITORING_HOST:$MONITORING_PORT недоступен"
+    # API недоступен
+    log_message "Monitoring server $API_URL is unreachable."
 fi
