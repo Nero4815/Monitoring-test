@@ -1,0 +1,8 @@
+[Unit]
+Description=Monitor the 'test' process and log restarts or monitoring issues
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/monitor-test.sh
+User=root
