@@ -30,7 +30,7 @@
    ```bash
    sudo mkdir -p /var/lib/monitoring
 
-6. Активирование и запуск таймер:
+6. Активирование и запуск таймера:
 
    ```bash
    sudo systemctl daemon-reload
