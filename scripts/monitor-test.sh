@@ -8,7 +8,7 @@ log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOGFILE"
 }
 
-CURRENT_PID=$(pgrep -f "^$PROCESS_NAME$")
+CURRENT_PID=$(pgrep -х "^$PROCESS_NAME$")
 
 if [ -z "$CURRENT_PID" ]; then
     # Процесс не запущен — ничего не делаем
